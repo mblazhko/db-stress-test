@@ -208,14 +208,9 @@ class CLI:
             help="Explicit confirmation for heavy workload runs.",
         )
         parser.add_argument(
-            "--allow-submillion",
-            action="store_true",
-            help="Allow start epochs lower than 1,000,000 for dry-run checks.",
-        )
-        parser.add_argument(
             "--connection-retries",
             type=int,
-            default=2,
+            default=5,
             help=(
                 "Retry count for reconnect + insert when "
                 "'OperationalError: connection is lost' occurs."
@@ -259,11 +254,6 @@ class CLI:
             parser.error("Invalid table name. Allowed pattern: [A-Za-z_][A-Za-z0-9_]*")
         if args.start_epochs < 1:
             parser.error("--start-epochs must be >= 1.")
-        if args.start_epochs < 1_000_000 and not args.allow_submillion:
-            parser.error(
-                "This test requires at least 1,000,000 start epochs. "
-                "Use --allow-submillion for dry-run only."
-            )
         if args.success_multiplier < 2:
             parser.error("--success-multiplier must be >= 2.")
         if args.failure_divider < 2:
@@ -567,8 +557,6 @@ class AttemptRunner:
         try:
             generator = JSONGenerator()
             for record_index in record_indices:
-                record_obj = None
-                db_value = None
                 record_start = time.perf_counter()
                 try:
                     generation_start = time.perf_counter()
@@ -605,9 +593,6 @@ class AttemptRunner:
                         f"worker={worker_id} record={record_index}: "
                         f"{type(exc).__name__}: {exc}"
                     )
-                finally:
-                    record_obj = None
-                    db_value = None
         finally:
             self._close_session(conn, cur)
 

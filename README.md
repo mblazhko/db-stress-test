@@ -151,6 +151,7 @@ Store payload as newline-delimited JSON compressed with Zstandard (`BYTEA`).
 
 - `--success-multiplier` default: `10`
 - `--failure-divider` default: `2`
+- `--start-epochs` accepts any integer `> 0`
 - `--max-attempts` default: `20`
 - `--max-refine-attempts` default: `25`
 - `--max-epochs-cap` default: `10000000000`
@@ -159,7 +160,6 @@ Store payload as newline-delimited JSON compressed with Zstandard (`BYTEA`).
 - `--attempt-delay-seconds` default: `0.0` (pause between attempts)
 - `--no-refine-max` disable binary refinement
 - `--keep-data-between-attempts` keep rows between attempts
-- `--allow-submillion` allow start epochs below 1,000,000 (dry runs only)
 
 ## Output
 
