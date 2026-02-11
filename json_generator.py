@@ -2,11 +2,25 @@ import random
 
 
 class JSONGenerator:
-    COLUMNS = [f"column_{i}" for i in range(21)]
-
-    def generate_epoch(self):
-        return {column: random.uniform(0, 1) for column in self.COLUMNS}
-
+    @staticmethod
+    def generate_epoch():
+        return {
+            "id_epoch": random.randint(0, 100),
+            "known_data": random.choice([True, False]),
+            "cycle_count": random.randint(5, 100),
+            "MFE_trunc": random.uniform(0, 1),
+            "norm_MFE": random.uniform(0, 1),
+            "MAE_trunc": random.uniform(0, 1),
+            "norm_MAE": random.uniform(0, 1),
+            "AIR_trunc": random.uniform(0, 1),
+            "norm_AIR": random.uniform(0, 1),
+            "HitRate": random.uniform(0, 1),
+            "norm_Hit": random.uniform(0, 1),
+            "median(duration) cycle": random.uniform(0, 1),
+            "time_to_MFE(median)": random.randint(5, 100),
+            "time_to_MAE(median)": random.randint(5, 100),
+            "Intermediate score(median)": random.uniform(0, 1),
+        }
 
     def batch_generate_epochs(self, epoch_in_record):
         return {
