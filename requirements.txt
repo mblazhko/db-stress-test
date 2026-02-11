@@ -1,4 +1,4 @@
-dnspython==2.8.0
+# Direct project dependencies only (no transitive deps)
 psycopg-binary==3.3.2
 pymongo==4.16.0
 python-dotenv==1.2.1
