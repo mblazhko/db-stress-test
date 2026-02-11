@@ -1,0 +1,25 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+.venv/
+venv/
+ENV/
+env/ß
+
+# Environment variables
+.env
+
+# JetBrains IDEs
+.idea/
+
+# Distribution / packaging
+*.egg-info/
+dist/
+build/
+
+# OS specific
+.DS_Store
+Thumbs.db
