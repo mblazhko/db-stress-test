@@ -51,7 +51,7 @@ export PG_DSN='postgresql://postgres:postgres@localhost:5432/stress_db'
 ## Default Run (10k -> 1M)
 
 ```bash
-./.venv/bin/python main.py \
+python main.py \
   --mode sync \
   --payload-format ndjson_zstd \
   --start-epochs 10000 \
@@ -64,7 +64,7 @@ export PG_DSN='postgresql://postgres:postgres@localhost:5432/stress_db'
 ## Async Fanout Run (single concurrency value)
 
 ```bash
-./.venv/bin/python main.py \
+python main.py \
   --mode async \
   --payload-format ndjson_zstd \
   --start-epochs 10000 \
