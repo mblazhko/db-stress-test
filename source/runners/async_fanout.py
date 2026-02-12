@@ -217,7 +217,7 @@ class AsyncFanoutBenchmarkRunner:
             conn = await self.codec.deps.psycopg.AsyncConnection.connect(
                 self.config.dsn
             )
-            async with conn.cursor() as cur:
+            async with conn.cursor(binary=True) as cur:
                 if self.config.statement_timeout_ms > 0:
                     await cur.execute(
                         "SET statement_timeout = %s;",
@@ -251,7 +251,7 @@ class AsyncFanoutBenchmarkRunner:
             conn = await self.codec.deps.psycopg.AsyncConnection.connect(
                 self.config.dsn
             )
-            async with conn.cursor() as cur:
+            async with conn.cursor(binary=True) as cur:
                 if self.config.statement_timeout_ms > 0:
                     await cur.execute(
                         "SET statement_timeout = %s;",

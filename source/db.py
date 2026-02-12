@@ -40,7 +40,7 @@ class DatabaseManager:
 
     def open_session(self) -> tuple[Any, Any]:
         conn = self.psycopg.connect(self.config.dsn)
-        cur = conn.cursor()
+        cur = conn.cursor(binary=True)
         if self.config.statement_timeout_ms > 0:
             cur.execute("SET statement_timeout = %s;", (self.config.statement_timeout_ms,))
             conn.commit()
