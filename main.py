@@ -24,20 +24,22 @@ class App:
         async_results: list[AsyncFanoutMetrics] = []
         csv_path = ""
         async_csv_path = ""
-
-        if self.config.mode == "sync":
-            results = self.runner.run()
-            self.reporter.print_results_table(results)
-            csv_path = self.reporter.save_csv(results)
-            print(f"CSV saved: {csv_path}")
-        else:
-            async_results = self.async_runner.run()
-            self.reporter.print_async_results_table(async_results)
-            async_csv_path = self.reporter.save_async_csv(async_results)
-            print(f"Async CSV saved: {async_csv_path}")
-
-        report_path = self.reporter.save_report(results, async_results)
-        print(f"Report saved: {report_path}")
+        try:
+            if self.config.mode == "sync":
+                results = self.runner.run()
+                self.reporter.print_results_table(results)
+                csv_path = self.reporter.save_csv(results)
+                print(f"CSV saved: {csv_path}")
+            else:
+                async_results = self.async_runner.run()
+                self.reporter.print_async_results_table(async_results)
+                async_csv_path = self.reporter.save_async_csv(async_results)
+                print(f"Async CSV saved: {async_csv_path}")
+        except Exception as exc:
+            print(f"Benchmark execution error: {type(exc).__name__}: {exc}")
+        finally:
+            report_path = self.reporter.save_report(results, async_results)
+            print(f"Report saved: {report_path}")
 
 
 def main() -> None:

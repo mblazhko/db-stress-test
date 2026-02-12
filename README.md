@@ -116,6 +116,8 @@ Report logic:
 - **Breaking Point**: first iteration where status is not `OK`
 - **Stability Point**: largest successful iteration before breaking point
 - **Optimal efficiency point**: successful iteration with max `epochs/sec`
+- Unexpected fatal iteration errors are recorded in the failed iteration `error` column;
+  benchmark stops after that point and still writes CSV/report with partial results.
 
 ## Generated Files
 

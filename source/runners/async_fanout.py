@@ -29,7 +29,13 @@ class AsyncFanoutBenchmarkRunner:
                 f"[async {index}/{len(epoch_values)}] "
                 f"concurrency={concurrency} epochs={epochs}"
             )
-            result = asyncio.run(self._run_level(index, concurrency, epochs))
+            try:
+                result = asyncio.run(self._run_level(index, concurrency, epochs))
+            except Exception as exc:
+                result = self._fatal_iteration_result(index, concurrency, epochs, exc)
+                self._print_async_summary(result)
+                results.append(result)
+                break
             self._print_async_summary(result)
             results.append(result)
         return results
@@ -141,6 +147,31 @@ class AsyncFanoutBenchmarkRunner:
         if values[-1] != self.config.end_epochs:
             values.append(self.config.end_epochs)
         return values
+
+    @staticmethod
+    def _fatal_iteration_result(
+        iteration: int, concurrency: int, epochs: int, exc: Exception
+    ) -> AsyncFanoutMetrics:
+        return AsyncFanoutMetrics(
+            iteration=iteration,
+            concurrency=concurrency,
+            epochs=epochs,
+            status="FAIL",
+            write_time_s=0.0,
+            read_time_s=0.0,
+            success_writes=0,
+            failed_writes=0,
+            success_reads=0,
+            failed_reads=0,
+            payload_bytes_per_record=0,
+            payload_bytes_total=0,
+            db_table_bytes=0,
+            write_peak_alloc_bytes=0,
+            read_peak_alloc_bytes=0,
+            write_rss_delta_bytes=0,
+            read_rss_delta_bytes=0,
+            error=f"fatal_iteration_error: {type(exc).__name__}: {exc}",
+        )
 
     async def _run_async_writes(
         self, concurrency: int, shared_db_value: Any

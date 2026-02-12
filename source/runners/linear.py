@@ -25,7 +25,13 @@ class LinearBenchmarkRunner:
 
         for index, epochs in enumerate(epoch_values, start=1):
             print(f"[{index}/{len(epoch_values)}] epochs={epochs}")
-            result = self._run_iteration(index, epochs)
+            try:
+                result = self._run_iteration(index, epochs)
+            except Exception as exc:
+                result = self._fatal_iteration_result(index, epochs, exc)
+                self._print_iteration_summary(result)
+                results.append(result)
+                break
             self._print_iteration_summary(result)
             results.append(result)
 
@@ -164,6 +170,27 @@ class LinearBenchmarkRunner:
         if values[-1] != self.config.end_epochs:
             values.append(self.config.end_epochs)
         return values
+
+    @staticmethod
+    def _fatal_iteration_result(
+        iteration: int, epochs: int, exc: Exception
+    ) -> IterationMetrics:
+        return IterationMetrics(
+            iteration=iteration,
+            epochs=epochs,
+            status="FAIL_WRITE",
+            write_time_s=0.0,
+            read_time_s=0.0,
+            client_payload_bytes=0,
+            db_payload_bytes=0,
+            db_row_bytes=0,
+            db_table_bytes=0,
+            write_peak_alloc_bytes=0,
+            read_peak_alloc_bytes=0,
+            write_rss_delta_bytes=0,
+            read_rss_delta_bytes=0,
+            error=f"fatal_iteration_error: {type(exc).__name__}: {exc}",
+        )
 
     @staticmethod
     def _print_iteration_summary(result: IterationMetrics) -> None:
