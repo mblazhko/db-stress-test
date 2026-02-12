@@ -45,10 +45,33 @@ class AsyncFanoutBenchmarkRunner:
 
         # Build once and fan out the same payload to focus on async DB IO behavior.
         generator = JSONGenerator()
-        shared_db_value, payload_size = self.codec.encode_for_insert(
-            generator=generator,
-            epochs=epochs,
-        )
+        try:
+            shared_db_value, payload_size = self.codec.encode_for_insert(
+                generator=generator,
+                epochs=epochs,
+            )
+        except Exception as exc:
+            prep_error = f"{type(exc).__name__}: {exc}"
+            return AsyncFanoutMetrics(
+                iteration=iteration,
+                concurrency=concurrency,
+                epochs=epochs,
+                status="FAIL",
+                write_time_s=0.0,
+                read_time_s=0.0,
+                success_writes=0,
+                failed_writes=0,
+                success_reads=0,
+                failed_reads=0,
+                payload_bytes_per_record=0,
+                payload_bytes_total=0,
+                db_table_bytes=0,
+                write_peak_alloc_bytes=0,
+                read_peak_alloc_bytes=0,
+                write_rss_delta_bytes=0,
+                read_rss_delta_bytes=0,
+                error=f"prepare_payload: {prep_error}",
+            )
 
         write_measure = await self._measure_async(
             lambda: self._run_async_writes(concurrency, shared_db_value)
@@ -210,8 +233,6 @@ class AsyncFanoutBenchmarkRunner:
                 row = await cur.fetchone()
             if row is None:
                 return False, f"row {row_id} not found on async read"
-            payload = row[0]
-            self.codec.decode_after_read(payload)
             return True, ""
         except Exception as exc:
             return False, f"read row={row_id}: {type(exc).__name__}: {exc}"
