@@ -36,13 +36,32 @@ class LinearBenchmarkRunner:
             self.db.truncate_table()
 
         generator = JSONGenerator()
+        try:
+            # Payload preparation is intentionally outside DB timing.
+            db_value, client_payload_bytes = self.codec.encode_for_insert(generator, epochs)
+        except Exception as exc:
+            prep_error = f"{type(exc).__name__}: {exc}"
+            return IterationMetrics(
+                iteration=iteration,
+                epochs=epochs,
+                status="FAIL_WRITE",
+                write_time_s=0.0,
+                read_time_s=0.0,
+                client_payload_bytes=0,
+                db_payload_bytes=0,
+                db_row_bytes=0,
+                db_table_bytes=0,
+                write_peak_alloc_bytes=0,
+                read_peak_alloc_bytes=0,
+                write_rss_delta_bytes=0,
+                read_rss_delta_bytes=0,
+                error=f"prepare_payload: {prep_error}",
+            )
 
-        def write_action() -> dict[str, Any]:
+        def write_action() -> int:
             conn, cur = self.db.open_session()
             try:
-                db_value, payload_size = self.codec.encode_for_insert(generator, epochs)
-                row_id = self.db.insert_payload(conn, cur, db_value)
-                return {"row_id": row_id, "payload_size": payload_size}
+                return self.db.insert_payload(conn, cur, db_value)
             finally:
                 self.db.close_session(conn, cur)
 
@@ -65,14 +84,12 @@ class LinearBenchmarkRunner:
                 error=write_measure.error,
             )
 
-        row_id = int(write_measure.data["row_id"])
-        client_payload_bytes = int(write_measure.data["payload_size"])
+        row_id = int(write_measure.data)
 
         def read_action() -> bool:
             conn, cur = self.db.open_session()
             try:
-                payload = self.db.fetch_payload(conn, cur, row_id)
-                self.codec.decode_after_read(payload)
+                self.db.fetch_payload(conn, cur, row_id)
                 return True
             finally:
                 self.db.close_session(conn, cur)
