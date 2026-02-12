@@ -4,8 +4,8 @@ This benchmark runs **linear iterations** from a start epoch count to an end epo
 with a fixed step (default: `10,000 -> 1,000,000`, step `10,000`).
 
 For each iteration it measures:
-- write time (generate + encode + insert)
-- read time (select + decode)
+- write time (DB insert stage only; payload generation/encoding is excluded)
+- read time (DB select stage only; client decode is excluded)
 - payload size in client memory
 - payload/row/table size inside PostgreSQL
 - operational memory (Python allocation peak + RSS high-water delta)
