@@ -193,6 +193,10 @@ class ResultsReporter:
         stability_point = None
         breaking_point = None
         best_efficiency = None
+        async_first_fail = None
+        async_stability_point = None
+        async_breaking_point = None
+        async_best_efficiency = None
         if results:
             first_fail = next((item for item in results if item.status != "OK"), None)
             if first_fail is None:
@@ -213,6 +217,31 @@ class ResultsReporter:
                 breaking_point = first_fail.epochs
             best_efficiency = max(
                 (item for item in results if item.status == "OK"),
+                key=lambda row: row.epochs_per_second,
+                default=None,
+            )
+        if async_results:
+            async_first_fail = next(
+                (item for item in async_results if item.status != "OK"), None
+            )
+            if async_first_fail is None:
+                async_stability_point = max(
+                    (item.epochs for item in async_results if item.status == "OK"),
+                    default=None,
+                )
+                async_breaking_point = None
+            else:
+                async_stability_point = max(
+                    (
+                        item.epochs
+                        for item in async_results
+                        if item.status == "OK" and item.epochs < async_first_fail.epochs
+                    ),
+                    default=None,
+                )
+                async_breaking_point = async_first_fail.epochs
+            async_best_efficiency = max(
+                (item for item in async_results if item.status == "OK"),
                 key=lambda row: row.epochs_per_second,
                 default=None,
             )
@@ -307,6 +336,36 @@ class ResultsReporter:
 
         if async_results:
             lines.append("## Async Fanout Results")
+            lines.append("")
+            lines.append("### Breaking Point And Stability Point")
+            lines.append("")
+            lines.append(
+                f"- Breaking Point: `{async_breaking_point}`"
+                if async_breaking_point is not None
+                else "- Breaking Point: not reached in tested range."
+            )
+            lines.append(
+                f"- Stability Point: `{async_stability_point}`"
+                if async_stability_point is not None
+                else "- Stability Point: not confirmed."
+            )
+            if async_stability_point is not None:
+                lines.append(
+                    "- Conclusion: stable write/read behavior is confirmed up to "
+                    f"`{async_stability_point}` epochs."
+                )
+            else:
+                lines.append(
+                    "- Conclusion: increase retries/resources and re-run to confirm stability."
+                )
+            if async_best_efficiency is not None:
+                lines.append(
+                    "- Optimal efficiency point: "
+                    f"`{async_best_efficiency.epochs}` epochs "
+                    f"({async_best_efficiency.epochs_per_second:.2f} epochs/sec)."
+                )
+            lines.append("")
+            lines.append("### Comparison Table (All Iterations)")
             lines.append("")
             lines.append(
                 "| iter | concurrency | epochs | status | write_s | read_s | total_s | "

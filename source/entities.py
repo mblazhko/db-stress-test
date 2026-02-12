@@ -93,6 +93,12 @@ class AsyncFanoutMetrics:
         return self.write_time_s + self.read_time_s
 
     @property
+    def epochs_per_second(self) -> float:
+        if self.total_time_s <= 0:
+            return 0.0
+        return (self.success_writes * self.epochs) / self.total_time_s
+
+    @property
     def write_records_per_second(self) -> float:
         if self.write_time_s <= 0:
             return 0.0
